@@ -6,6 +6,8 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { useCallback, useEffect, useState } from "react";
+import { getCurrentUser, signIn, signOut } from "../lib/puter.action";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -42,7 +44,51 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  const [auth, setAuth] = useState<AuthState>({
+    isSignedIn: false,
+    userName: null,
+    userId: null,
+  });
+
+  const refreshAuth = useCallback(async () => {
+    const user = await getCurrentUser();
+    const isSignedIn = Boolean(user);
+
+    setAuth({
+      isSignedIn,
+      userName: user?.username ?? null,
+      userId: user?.uuid ?? null,
+    });
+
+    return isSignedIn;
+  }, []);
+
+  useEffect(() => {
+    refreshAuth();
+  }, [refreshAuth]);
+
+  const handleSignIn = useCallback(async () => {
+    const result = await signIn();
+    await refreshAuth();
+    return Boolean(result);
+  }, [refreshAuth]);
+
+  const handleSignOut = useCallback(async () => {
+    const result = await signOut();
+    await refreshAuth();
+    return Boolean(result);
+  }, [refreshAuth]);
+
+  return (
+    <Outlet
+      context={{
+        ...auth,
+        refreshAuth,
+        signIn: handleSignIn,
+        signOut: handleSignOut,
+      } satisfies AuthContext}
+    />
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {

@@ -33,22 +33,23 @@ export default function Home() {
         timestamp: Date.now()
       }
 
-      const saved = await createProject({ item: newItem, visibility: 'private' });
-
-      if(!saved) {
-        console.error("Failed to create project");
-        return false;
-      }
-
-      setProjects((prev) => [saved, ...prev]);
-
       navigate(`/visualizer/${newId}`, {
         state: {
-          initialImage: saved.sourceImage,
-          initialRendered: saved.renderedImage || null,
+          initialImage: newItem.sourceImage,
+          initialRendered: null,
           name
         }
       });
+
+      let saved: DesignItem | null = null;
+      try {
+        saved = await createProject({ item: newItem, visibility: 'private' }) ?? null;
+      } catch (error) {
+        console.error("Failed to create project", error);
+      }
+
+      const project = saved ?? newItem;
+      setProjects((prev) => [project, ...prev]);
 
       return true;
     } finally {

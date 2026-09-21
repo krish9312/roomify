@@ -1,4 +1,6 @@
-export const PUTER_WORKER_URL = import.meta.env.VITE_PUTER_WORKER_URL || "";
+let puterWorkerUrl = import.meta.env.VITE_PUTER_WORKER_URL || "";
+while (puterWorkerUrl.endsWith("/")) puterWorkerUrl = puterWorkerUrl.slice(0, -1);
+export const PUTER_WORKER_URL = puterWorkerUrl;
 
 // Storage Paths
 export const STORAGE_PATHS = {
@@ -28,6 +30,9 @@ export const ROOMIFY_RENDER_PROMPT = `
 TASK: Convert the input 2D floor plan into a **photorealistic, top‑down 3D architectural render**.
 
 STRICT REQUIREMENTS (do not violate):
+0) Treat the input as a rigid blueprint, not inspiration. Geometry has priority over style.
+    Preserve the exact outer boundary, room proportions, wall positions, openings, and circulation paths.
+    Do not crop, mirror, rotate, simplify, redesign, or invent architectural elements.
 1) **REMOVE ALL TEXT**: Do not render any letters, numbers, labels, dimensions, or annotations. Floors must be continuous where text used to be.
 2) **GEOMETRY MUST MATCH**: Walls, rooms, doors, and windows must follow the exact lines and positions in the plan. Do not shift or resize.
 3) **TOP‑DOWN ONLY**: Orthographic top‑down view. No perspective tilt.
